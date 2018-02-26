@@ -64,11 +64,11 @@ libcef共享库导出了C API来隔离用户与CEF运行库和基础代码。lib
 
 CEF3使用多进程运行。主进程叫做Browser进程，负责窗口创建、绘制和网络交互，这通常就是host application的进程，并且大部分应用程序逻辑将在Browser进程中运行。Blink渲染和JavaScript都在Render进程执行，一些应用逻辑记录Javascript绑定和DOM节点的访问也在Render进程执行。默认的[进程模型](http://www.chromium.org/developers/design-documents/process-models)为每一个单独的origin(scheme+domain)创建一个新的Render进程。其他进程按照需要创建，例如"plugin"进程用来处[插件](http://www.chromium.org/developers/design-documents/plugin-architecture)例如Flash，"gpu"进程用来处理[合成加速](http://www.chromium.org/developers/design-documents/gpu-accelerated-compositing-in-chrome) 。
 
-By default the main application executable will be spawned multiple times to represent separate processes. This is handled via command-line flags that are passed into the CefExecuteProcess function. If the main application executable is large, takes a long time to load, or is otherwise unsuitable for non-browser processes the host can use a separate executable for those other processes. This can be configured via the CefSettings.browser_subprocess_path variable. See the “Application Structure” section for more information.
+默认情况下，主应用程序会被多次启动运行各自独立的进程。这是通过传递不同的命令行参数给`CefExecuteProcess`函数做到的。如果主应用程序很大，加载时间比较长，或者不能在非浏览器进程里使用，则宿主程序可使用独立的可执行文件去运行这些进程。这可以通过配置`CefSettings.browser_subprocess_path`变量做到。更多细节请参考"Application Structure"章节。
 
-The separate processes spawned by CEF3 communicate using Inter-Process Communication (IPC). Application logic implemented in the browser and render processes can communicate by sending asynchronous messages back and forth. [JavaScriptIntegration](https://bitbucket.org/chromiumembedded/cef/wiki/JavaScriptIntegration.md) in the render process can expose asynchronous APIs that are handled in the browser process. See the “Inter-Process Communication” section for more information.
+CEF3的进程之间可以通过进程间通信(IPC)进行通信。browser和render进程应用逻辑的实现可以通过发送异步消息进行双向通信。 render进程中的[JavaScript集成](https://bitbucket.org/chromiumembedded/cef/wiki/JavaScriptIntegration.md) 可以暴露异步的API给browser。 更多细节参考"进程间通信"章节。
 
-Platform-specific debugging tips are also available for [Windows](https://www.chromium.org/developers/how-tos/debugging-on-windows), [Mac OS X](http://www.chromium.org/developers/how-tos/debugging-on-os-x) and [Linux](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md).
+特定于平台的调试提示支持[Windows](https://www.chromium.org/developers/how-tos/debugging-on-windows), [Mac OS X](http://www.chromium.org/developers/how-tos/debugging-on-os-x)和 [Linux](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md).
 
 ## 线程(Threads)
 
