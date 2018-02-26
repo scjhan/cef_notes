@@ -2,25 +2,25 @@
 
 [TOC]
 
-# Introduction
+# 介绍(Introduction)
 
-The Chromium Embedded Framework (CEF) is an open source project based on the [Google Chromium](http://www.chromium.org/Home) project. Unlike the Chromium project itself, which focuses mainly on Google Chrome application development, CEF focuses on facilitating embedded browser use cases in third-party applications. CEF insulates the user from the underlying Chromium and Blink code complexity by offering production-quality stable APIs, release branches tracking specific Chromium releases, and binary distributions. Most features in CEF have default implementations that provide rich functionality while requiring little or no integration work from the user. As of this article’s publication there are over 100 million installed instances of CEF around the world embedded in products from a wide range of companies and industries. A partial list of companies and products using CEF is available on the [CEF Wikipedia page](http://en.wikipedia.org/wiki/Chromium_Embedded_Framework#Applications_using_CEF). Some use cases for CEF include:
+Chromium Embedded Framework (CEF) 是一个开源的基于 [Google Chromium](http://www.chromium.org/Home) 的项目。Chromium主要为Google Chrome应用开发，CEF主要为第三方应用提供嵌入式浏览器功能的支持。CEF隔离了Chromium和Blink底层复杂的代码，提供了产品级稳定的API，发布跟踪具体Chromium版本的分支，以及二进制包。CEF大部分特性都提供了丰富的默认实现，让使用者做尽量少的定制即可满足需求。在本文发布的时候，世界上已经有很多公司和机构采用CEF，CEF的安装量超过了一亿。使用CEF的公司和产品的部分列表可在[CEF Wikipedia 页面](http://en.wikipedia.org/wiki/Chromium_Embedded_Framework#Applications_using_CEF)上找到。CEF的典型应用场景包括：
 
-- Embedding an HTML5-compliant Web browser control in an existing native application.
-- Creating a light-weight native “shell” application that hosts a user interface developed primarily using Web technologies.
-- Rendering Web content “off-screen” in applications that have their own custom drawing frameworks.
-- Acting as a host for automated testing of existing Web properties and applications.
+- 嵌入一个兼容HTML5的浏览器控件到一个已经存在的本地应用。
+- 创建一个轻量化的"shell"应用，用以托管主要用Web技术开发的应用。
+- 有些应用有独立的绘制框架，使用CEF对Web内容做离线渲染。
+- 使用CEF做自动化Web测试。
 
-CEF3 is the next generation of CEF based on the multi-process [Chromium Content API](http://www.chromium.org/developers/content-module/content-api). Advantages to CEF3’s multi-process architecture include:
+CEF3是基于 [Chromium Content API](http://www.chromium.org/developers/content-module/content-api)多进程构架的下一代CEF，拥有下列优势：
 
-- Improved performance and stability (JavaScript and plugins run in a separate process).
-- Support for Retina displays.
-- GPU acceleration for WebGL and 3D CSS.
-- Cool new features like WebRTC (webcam support) and speech input.
-- Better automated UI testing via the DevTools remote debugging protocol and [ChromeDriver2](https://code.google.com/p/chromedriver/wiki/ChromeDriver2).
-- Faster access to current and future Web features and standards.
+- 改进的性能和稳定性（JavaScript和插件在一个独立的进程内执行）。
+- 支持Retina显示器。
+- 支持WebGL和3D CSS的GPU加速。
+- 类似WebRTC和语音输入这样的前卫特性。
+- 通过DevTools远程调试协议以及 [ChromeDriver2](https://code.google.com/p/chromedriver/wiki/ChromeDriver2)提供更好的自动化UI测试。
+- 更快获得当前以及未来的Web特性和标准的能力。
 
-This document introduces the general concepts involved when developing an application using CEF3.
+本文档介绍CEF3开发中涉及到的一般概念。
 
 # 开始使用(Getting Started)
 
@@ -687,19 +687,19 @@ void MyHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
 
 完整的流程，请参考cefclient例子里对不同平台的处理。
 
-## Off-Screen Rendering
+## 离屏渲染(Off-Screen Rendering)
 
-With off-screen rendering CEF does not create a native browser window. Instead, CEF provides the host application with invalidated regions and a pixel buffer and the host application notifies CEF of mouse, keyboard and focus events. Off-screen rendering does not currently support accelerated compositing so performance may suffer as compared to a windowed browser. Off-screen browsers will receive the same notifications as windowed browsers including the life span notifications described in the previous section. To use off-screen rendering:
+CEF离屏渲染不会创建一个native的browser窗口，而是CEF提供给宿主程序一个无效的区域和像素缓冲区，宿主程序负责通知鼠标、键盘和焦点事件。离屏渲染目前不支持混合加速，所以性能上可能无法和非离屏渲染相比。离屏浏览器将收到和窗口浏览器同样的事件通知，包括前面章节介绍的生命周期事件。使用离屏渲染：
 
-1. Implement the [CefRenderHandler](http://magpcss.org/ceforum/apidocs3/projects/(default)/CefRenderHandler.html) interface. All methods are required unless otherwise indicated.
-2. Call CefWindowInfo::SetAsWindowless() before passing the CefWindowInfo structure to CefBrowserHost::CreateBrowser(). If no parent window is passed to SetAsWindowless some functionality like context menus may not be available.
-3. The CefRenderHandler::GetViewRect() method will be called to retrieve the desired view rectangle.
-4. The CefRenderHandler::OnPaint() method will be called to provide invalid regions and the updated pixel buffer. The cefclient application draws the buffer using OpenGL but your application can use whatever technique you prefer.
-5. To resize the browser call CefBrowserHost::WasResized(). This will result in a call to GetViewRect() to retrieve the new size followed by a call to OnPaint().
-6. Call the CefBrowserHost::SendXXX() methods to notify the browser of mouse, keyboard and focus events.
-7. Call CefBrowserHost::CloseBrowser() to destroy browser.
+1. 实现 [CefRenderHandler](http://magpcss.org/ceforum/apidocs3/projects/(default)/CefRenderHandler.html) 接口。除非特别说明，所有的方法都需要实现。
+2. 在传递`CefWindowInfo`结构体给`CefBrowserHost::CreateBrowser()`之前调用`CefWindowInfo::SetAsWindowless() `。如果传递给`SetAsWindowless`父窗口值，则一些功能如右键菜单等将无效。
+3. `CefRenderHandler::GetViewRect()`方法将被调用以获取所需要的可视区域。
+4. `CefRenderHandler::OnPaint() `方法将会被调用以提供一个无效的区域和更新过的像素缓冲区。cefclient应用程序使用OpenGL绘制buffer，但你可以使用任何别的绘制技术。
+5. 调用`CefBrowserHost::WasResized()`方法修改浏览器大小。这将导致`GetViewRect()`方法被调用以获取浏览器的新的大小，然后调用`OnPaint()`。
+6. 调用`CefBrowserHost::SendXXX() `方法通知浏览器鼠标、键盘、焦点事件。
+7. 调用` CefBrowserHost::CloseBrowser()`销毁浏览器。
 
-Run cefclient with the “--off-screen-rendering-enabled” command-line flag for a working example.
+使用"--off-screen-rendering-enabled"命令行参数运行cefclient程序查看离屏渲染的例子。
 
 # 投递任务(Posting Tasks)
 
